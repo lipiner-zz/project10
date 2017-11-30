@@ -3,7 +3,7 @@ class JackTokenizer:
     def __init__(self, input_file):
         pass
 
-    def hasMore_tokens(self):
+    def has_more_tokens(self):
         pass
 
     def advance(self):
