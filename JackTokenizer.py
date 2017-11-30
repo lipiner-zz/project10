@@ -2,7 +2,10 @@ KEYWORD_TYPE = "keyword"
 SYMBOL_TYPE = "symbol"
 INTEGER_CONST_TYPE = "integerConstant"
 STRING_COST_TYPE = "StringConstant"
-IDENTIFIER = "identifier"
+IDENTIFIER_TYPE = "identifier"
+KEYWORD_LIST = []
+SYMBOL_LIST = []
+
 EOF_NOTE = ''
 
 
