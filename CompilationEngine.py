@@ -1,10 +1,6 @@
 from JackTokenizer import JackTokenizer, KEYWORD_TYPE, SYMBOL_TYPE, \
     INTEGER_CONST_TYPE, STRING_COST_TYPE, IDENTIFIER_TYPE
 
-TAG_PREFIX = "<"
-TAG_SUFFIX = ">"
-TAG_CLOSER = "/"
-
 
 class CompilationEngine:
 
@@ -67,6 +63,7 @@ class CompilationEngine:
         if self.__tokenizer.token_type() == KEYWORD_TYPE:
             if self.__tokenizer.get_keyword() in keyword_list:
                 self.__output_stream.write(self.__prefix + self.__tokenizer.get_token_string())
+                return True
 
     def check_type(self):
         pass
