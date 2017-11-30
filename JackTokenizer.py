@@ -12,17 +12,17 @@ class JackTokenizer:
     def token_type(self):
         pass
 
-    def key_word(self):
+    def get_keyword(self):
         pass
 
-    def symbol(self):
+    def get_symbol(self):
         pass
 
-    def identifier(self):
+    def get_identifier(self):
         pass
 
-    def int_val(self):
+    def get_int_val(self):
         pass
 
-    def string_val(self):
+    def get_string_val(self):
         pass
