@@ -1,5 +1,13 @@
 class CompilationEngine:
 
+    def __init__(self, input_file, output_file):
+        """
+        Creates a new compilation engine with the
+        given input and output. The next routine
+        called must be compileClass().
+        """
+        pass
+
     def compile_class(self):
         pass
 
