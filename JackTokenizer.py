@@ -7,6 +7,9 @@ KEYWORD_LIST = ['class', 'constructor', 'function', 'method', 'field', 'static',
                 'void', 'true', 'false', 'null', 'this', 'let', 'do', 'if', 'else', 'while', 'return']
 SYMBOL_LIST = ['{', '}', '(', ')', '[', ']', '. ', ', ', '; ', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~']
 EOF_NOTE = ''
+TAG_PREFIX = "<"
+TAG_SUFFIX = ">"
+TAG_CLOSER = "/"
 
 
 class JackTokenizer:
