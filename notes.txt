@@ -1,0 +1,6 @@
+1. main: compiler.compileClass()
+2. each compiler starts with <TYPE> and ends with </TYPE>
+3. each compiler returns true/false
+4. whenever there is a ()* there will be a while loop calling the relevant compiler or checking if we need to continue
+5. checkKeyword- gets a list with the possible keywords (might be only 1)
+6. expressions- first check everythin that is not an identifier. Then call subrutineCall if there was an error throw it, if False (no "(" or ".") then check for "[" for vare name[] and check for expression. else returns True.
