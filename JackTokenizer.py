@@ -15,6 +15,7 @@ STRING_CONST_MARK = "\""
 BLOCK_COMMENT_START_MARK = "/*"
 BLOCK_COMMENT_END_MARK = "*/"
 LINE_COMMENT_MARK = "//"
+SYMBOL_FIX = {"<": "&lt", ">": "&gt", "&": "&amp"}
 
 
 class JackTokenizer:
@@ -134,6 +135,8 @@ class JackTokenizer:
                 else:
                     self.__next_token_type = SYMBOL_TYPE
 
+        self.__fix_symbol()  # fix the symbol format in case it is needed
+
     # def __set_type(self):
     #     pass
 
@@ -163,3 +166,7 @@ class JackTokenizer:
 
     def __create_type_tag(self, closer=''):
         return TAG_PREFIX + closer + self.__token_type + TAG_SUFFIX
+
+    def __fix_symbol(self):
+        if self.__current_token in SYMBOL_FIX:
+            self.__current_token = SYMBOL_FIX[self.__current_token]
