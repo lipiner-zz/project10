@@ -1,5 +1,5 @@
 from JackTokenizer import JackTokenizer, KEYWORD_TYPE, SYMBOL_TYPE, \
-    INTEGER_CONST_TYPE, STRING_COST_TYPE, IDENTIFIER_TYPE
+    INTEGER_CONST_TYPE, STRING_CONST_TYPE, IDENTIFIER_TYPE
 
 OP_LIST = ['+', '-', '*', '/', '&', '|', '<', '>', '=']
 UNARY_OP_LIST = ['-', '~']
