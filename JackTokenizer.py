@@ -10,25 +10,94 @@ EOF_NOTE = ''
 TAG_PREFIX = "<"
 TAG_SUFFIX = ">"
 TAG_CLOSER = "/"
+NUMBER_OF_READING_BYTES = 1
+STRING_COST_MARK = "\""
+BLOCK_COMMENT_START_MARK = "/*"
+BLOCK_COMMENT_END_MARK = "*/"
+LINE_COMMENT_MARK = "//"
 
 
 class JackTokenizer:
 
     def __init__(self, input_stream):
         self.__file = input_stream
-        self.__current_tokens = []
+        # self.__current_tokens = []
+        self.__current_token = None
         self.__token_type = None
+        self.__next_token = None
+        self.__has_token = False  # marks if a full token has found for the next token
 
     def has_more_tokens(self):
-        if len(self.__current_tokens) == 0:
-            line = self.__file.readline()
-            if line == EOF_NOTE:
-                return False
-        else:
+        # if self.__next_token is not None:
+        #     return True
+        #
+        # if len(self.__current_tokens) == 0:
+        #     line = self.__file.readline()
+        #     if line == EOF_NOTE:
+        #         return False
+        # else:
+        #     return True
+
+        if self.__has_token:
             return True
 
+        while not self.__next_token:  # as long as the next token is not None
+            self.__next_token = self.__file.read(NUMBER_OF_READING_BYTES)
+            while not self.__next_token.isspace():  # skips on whitespaces
+                self.__next_token = self.__file.read(NUMBER_OF_READING_BYTES)
+            if self.__next_token == EOF_NOTE:
+                return False  # no more tokens
+            if self.__next_token == STRING_COST_MARK:
+                # next token is a string constant
+                next_char = self.__file.read(NUMBER_OF_READING_BYTES)
+                self.__next_token = ""
+                while next_char != STRING_COST_MARK:  # search for the rest of the string constant
+                    self.__next_token += next_char
+                self.__has_token = True  # a full token was read
+            elif self.__next_token in SYMBOL_LIST:
+                self.__has_token = True  # a full token was found
+            else:
+                # not a a symbol - # adds another byte
+                self.__next_token += self.__file.read(NUMBER_OF_READING_BYTES)
+                # checks if there is a comment
+                if self.__next_token == LINE_COMMENT_MARK:
+                    self.__next_token = None  # nullify the token since this is a comment
+                    self.__file.readline()  # skip the line
+                elif self.__next_token == BLOCK_COMMENT_START_MARK:
+                    self.__next_token = None  # nullify the token since this is a comment
+                    # searches for the end of the comment mark
+                    next_char = self.__file.read(len(BLOCK_COMMENT_END_MARK))
+                    while next_char != BLOCK_COMMENT_END_MARK:
+                        next_char = next_char[1:]
+                        next_char += self.__file.read(NUMBER_OF_READING_BYTES)
+                self.__has_token = False  # the token was not completed
+        return True
+
     def advance(self):
-        pass
+        # if self.__next_token is not None:
+        #     self.__current_token = self.__next_token
+        #     self.__next_token = None
+        # else:
+        #     self.__next_token = self.__file.read(NUMBER_OF_READING_BYTES)
+        #     while self.__next_token != EOF_NOTE and self.__next_token != " " and \
+        #                             self.__next_token is not in SYMBOL_LIST:
+        #         pass
+        #
+        # self.__current_token = self.__next_token
+        # self.__next_token = self.__file.read(NUMBER_OF_READING_BYTES)
+        # while self.__next_token != EOF_NOTE and self.__next_token != " " and self.__next_token is not in SYMBOL_LIST:
+        #     self.__current_token += self.__next_token
+
+        self.__current_token = self.__next_token
+        if not self.__has_token:
+            next_char = self.__file.read(NUMBER_OF_READING_BYTES)
+            while next_char not in SYMBOL_LIST and not next_char.isspace():
+                self.__current_token += next_char
+            if next_char in SYMBOL_LIST:
+                self.__next_token = next_char
+                self.__has_token = True
+        else:
+            self.__has_token = False  # the token has been used
 
     def token_type(self):
         pass
