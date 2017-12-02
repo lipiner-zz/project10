@@ -74,6 +74,10 @@ class JackTokenizer:
         return True
 
     def advance(self):
+        """
+        Gets the next token from the input and makes it the current token. This method should only
+        be called if hasMoreTokens() is true. Initially there is no current token.
+        """
         # if self.__next_token is not None:
         #     self.__current_token = self.__next_token
         #     self.__next_token = None
