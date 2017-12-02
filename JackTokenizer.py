@@ -5,13 +5,15 @@ STRING_CONST_TYPE = "StringConstant"
 IDENTIFIER_TYPE = "identifier"
 KEYWORD_LIST = ['class', 'constructor', 'function', 'method', 'field', 'static', 'var', 'int', 'char', 'boolean',
                 'void', 'true', 'false', 'null', 'this', 'let', 'do', 'if', 'else', 'while', 'return']
-SYMBOL_LIST = ['{', '}', '(', ')', '[', ']', '. ', ', ', '; ', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~']
+SYMBOL_LIST = ['{', '}', '(', ')', '[', ']', '.', ',', ';', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~']
 EOF_NOTE = ''
 TAG_PREFIX = "<"
 TAG_SUFFIX = ">"
 TAG_CLOSER = "/"
+TAG_DELIMITER = " "
 NUMBER_OF_READING_BYTES = 1
 STRING_CONST_MARK = "\""
+COMMENT_SYMBOLS = ["/", "*"]
 BLOCK_COMMENT_START_MARK = "/*"
 BLOCK_COMMENT_END_MARK = "*/"
 LINE_COMMENT_MARK = "//"
@@ -42,10 +44,11 @@ class JackTokenizer:
 
         # if not self.__next_token_type:
         #     return True
-
-        while not self.__next_token:  # as long as the next token is not None
-            self.__next_token = self.__file.read(NUMBER_OF_READING_BYTES)
-            while not self.__next_token.isspace():  # skips on whitespaces
+        while not self.__next_token_type and not self.__next_token:  # as long the next token and its type are not None
+            if not self.__next_token:
+                # if the next token is None and hasn't been initialize with something, read byte
+                self.__next_token = self.__file.read(NUMBER_OF_READING_BYTES)
+            while self.__next_token.isspace():  # skips on whitespaces
                 self.__next_token = self.__file.read(NUMBER_OF_READING_BYTES)
             if self.__next_token == EOF_NOTE:
                 return False  # no more tokens
@@ -58,9 +61,6 @@ class JackTokenizer:
                     next_char = self.__file.read(NUMBER_OF_READING_BYTES)
                 # self.__has_token = True  # a full token was read
                 self.__next_token_type = STRING_CONST_TYPE
-            elif self.__next_token in SYMBOL_LIST:
-                # self.__has_token = True  # a full token was found
-                self.__next_token_type = SYMBOL_TYPE
             elif self.__next_token.isdigit():
                 # next token is a int constant
                 next_char = self.__file.read(NUMBER_OF_READING_BYTES)
@@ -70,10 +70,9 @@ class JackTokenizer:
                 # self.__has_token = True  # a full token was read
                 self.__next_token += next_char  # adds also the delimiter char for not missing it
                 self.__next_token_type = INTEGER_CONST_TYPE
-            else:
-                # not a a symbol - # adds another byte
+            elif self.__next_token in COMMENT_SYMBOLS:
+                # check if it is a comment - add byte
                 self.__next_token += self.__file.read(NUMBER_OF_READING_BYTES)
-                # checks if there is a comment
                 if self.__next_token == LINE_COMMENT_MARK:
                     self.__next_token = None  # nullify the token since this is a comment
                     self.__file.readline()  # skip the line
@@ -84,7 +83,13 @@ class JackTokenizer:
                     while next_char != BLOCK_COMMENT_END_MARK:
                         next_char = next_char[1:]
                         next_char += self.__file.read(NUMBER_OF_READING_BYTES)
-                # self.__has_token = False  # the token was not completed
+                        # self.__has_token = False  # the token was not completed
+                else:
+                    # it wasn't a comment
+                    self.__next_token_type = SYMBOL_TYPE
+            elif self.__next_token in SYMBOL_LIST:
+                # self.__has_token = True  # a full token was found
+                self.__next_token_type = SYMBOL_TYPE
 
         return True
 
@@ -126,14 +131,18 @@ class JackTokenizer:
             # self.__has_token = False  # the token has been used
             self.__token_type = self.__next_token_type
             self.__next_token_type = None
-            if self.__token_type == INTEGER_CONST_TYPE:
-                # should remove an extra char
+            if self.__token_type == INTEGER_CONST_TYPE or \
+                    (self.__token_type == SYMBOL_TYPE and len(self.__current_token) > 1):
+                # the token is an integer or the token starts like comment token so an extra byte was read
+                # removing the extra char and stores it as the next token if needed
                 self.__next_token = self.__current_token[-1]
                 self.__current_token = self.__current_token[:-1]
-                if self.__next_token not in SYMBOL_LIST:
-                    self.__next_token = None
-                else:
-                    self.__next_token_type = SYMBOL_TYPE
+            #     if self.__next_token not in SYMBOL_LIST:
+            #         self.__next_token = None
+            #     else:
+            #         self.__next_token_type = SYMBOL_TYPE
+            # elif self.__token_type == SYMBOL_TYPE and len(self.__token_type) > 1:
+            #     # the token starts like comment token so an extra byte was read
 
         self.__fix_symbol()  # fix the symbol format in case it is needed
 
@@ -162,7 +171,8 @@ class JackTokenizer:
         return self.__current_token
 
     def get_token_string(self):
-        return self.__create_type_tag() + self.__current_token + self.__create_type_tag(TAG_CLOSER)
+        return self.__create_type_tag() + TAG_DELIMITER + self.__current_token + TAG_DELIMITER + \
+               self.__create_type_tag(TAG_CLOSER)
 
     def __create_type_tag(self, closer=''):
         return TAG_PREFIX + closer + self.__token_type + TAG_SUFFIX
