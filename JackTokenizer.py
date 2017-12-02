@@ -54,11 +54,21 @@ class JackTokenizer:
                 self.__next_token = ""
                 while next_char != STRING_CONST_MARK:  # search for the rest of the string constant
                     self.__next_token += next_char
+                    next_char = self.__file.read(NUMBER_OF_READING_BYTES)
                 # self.__has_token = True  # a full token was read
                 self.__next_token_type = STRING_CONST_TYPE
             elif self.__next_token in SYMBOL_LIST:
                 # self.__has_token = True  # a full token was found
                 self.__next_token_type = SYMBOL_TYPE
+            elif self.__next_token.isdigit():
+                # next token is a int constant
+                next_char = self.__file.read(NUMBER_OF_READING_BYTES)
+                while next_char.isdigit():  # search for the rest of the string constant
+                    self.__next_token += next_char
+                    next_char = self.__file.read(NUMBER_OF_READING_BYTES)
+                # self.__has_token = True  # a full token was read
+                self.__next_token += next_char  # adds also the delimiter char for not missing it
+                self.__next_token_type = INTEGER_CONST_TYPE
             else:
                 # not a a symbol - # adds another byte
                 self.__next_token += self.__file.read(NUMBER_OF_READING_BYTES)
@@ -102,35 +112,54 @@ class JackTokenizer:
             next_char = self.__file.read(NUMBER_OF_READING_BYTES)
             while next_char not in SYMBOL_LIST and not next_char.isspace():
                 self.__current_token += next_char
+                next_char = self.__file.read(NUMBER_OF_READING_BYTES)
             if next_char in SYMBOL_LIST:
                 self.__next_token = next_char
                 self.__next_token_type = SYMBOL_TYPE
                 # self.__has_token = True
+            if self.__current_token in KEYWORD_LIST:
+                self.__token_type = KEYWORD_TYPE
+            else:
+                self.__token_type = IDENTIFIER_TYPE
         else:
             # self.__has_token = False  # the token has been used
             self.__token_type = self.__next_token_type
             self.__next_token_type = None
+            if self.__token_type == INTEGER_CONST_TYPE:
+                # should remove an extra char
+                self.__next_token = self.__current_token[-1]
+                self.__current_token = self.__current_token[:-1]
+                if self.__next_token not in SYMBOL_LIST:
+                    self.__next_token = None
+                else:
+                    self.__next_token_type = SYMBOL_TYPE
+
+    # def __set_type(self):
+    #     pass
 
     def get_token_type(self):
-        pass
+        return self.__token_type
 
-    def get_keyword(self):
-        pass
-
-    def get_symbol(self):
-        pass
-
-    def get_identifier(self):
-        pass
-
-    def get_int_val(self):
-        pass
-
-    def get_string_val(self):
-        pass
+    # def get_keyword(self):
+    #     pass
+    #
+    # def get_symbol(self):
+    #     pass
+    #
+    # def get_identifier(self):
+    #     pass
+    #
+    # def get_int_val(self):
+    #     pass
+    #
+    # def get_string_val(self):
+    #     pass
 
     def get_value(self):
-        pass
+        return self.__current_token
 
     def get_token_string(self):
-        pass
+        return self.__create_type_tag() + self.__current_token + self.__create_type_tag(TAG_CLOSER)
+
+    def __create_type_tag(self, closer=''):
+        return TAG_PREFIX + closer + self.__token_type + TAG_SUFFIX
