@@ -39,8 +39,8 @@ class JackTokenizer:
         # else:
         #     return True
 
-        if self.__has_token:
-            return True
+        # if not self.__next_token_type:
+        #     return True
 
         while not self.__next_token:  # as long as the next token is not None
             self.__next_token = self.__file.read(NUMBER_OF_READING_BYTES)
@@ -54,10 +54,11 @@ class JackTokenizer:
                 self.__next_token = ""
                 while next_char != STRING_CONST_MARK:  # search for the rest of the string constant
                     self.__next_token += next_char
-                self.__has_token = True  # a full token was read
+                # self.__has_token = True  # a full token was read
                 self.__next_token_type = STRING_CONST_TYPE
             elif self.__next_token in SYMBOL_LIST:
-                self.__has_token = True  # a full token was found
+                # self.__has_token = True  # a full token was found
+                self.__next_token_type = SYMBOL_TYPE
             else:
                 # not a a symbol - # adds another byte
                 self.__next_token += self.__file.read(NUMBER_OF_READING_BYTES)
@@ -72,7 +73,8 @@ class JackTokenizer:
                     while next_char != BLOCK_COMMENT_END_MARK:
                         next_char = next_char[1:]
                         next_char += self.__file.read(NUMBER_OF_READING_BYTES)
-                self.__has_token = False  # the token was not completed
+                # self.__has_token = False  # the token was not completed
+
         return True
 
     def advance(self):
@@ -95,17 +97,21 @@ class JackTokenizer:
         #     self.__current_token += self.__next_token
 
         self.__current_token = self.__next_token
-        if not self.__has_token:
+        self.__next_token = None
+        if not self.__next_token_type:
             next_char = self.__file.read(NUMBER_OF_READING_BYTES)
             while next_char not in SYMBOL_LIST and not next_char.isspace():
                 self.__current_token += next_char
             if next_char in SYMBOL_LIST:
                 self.__next_token = next_char
-                self.__has_token = True
+                self.__next_token_type = SYMBOL_TYPE
+                # self.__has_token = True
         else:
-            self.__has_token = False  # the token has been used
+            # self.__has_token = False  # the token has been used
+            self.__token_type = self.__next_token_type
+            self.__next_token_type = None
 
-    def token_type(self):
+    def get_token_type(self):
         pass
 
     def get_keyword(self):

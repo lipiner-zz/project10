@@ -71,7 +71,7 @@ class CompilationEngine:
         :return: True if the current token is from Keyword type, and it's value exists in the keyword list,
           and false otherwise
         """
-        if self.__tokenizer.token_type() == KEYWORD_TYPE:
+        if self.__tokenizer.get_token_type() == KEYWORD_TYPE:
             if self.__tokenizer.get_value() in value_list:
                 self.__output_stream.write(self.__prefix + self.__tokenizer.get_token_string())
                 return True
