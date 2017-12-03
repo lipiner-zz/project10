@@ -1,7 +1,7 @@
 from JackTokenizer import JackTokenizer, KEYWORD_TYPE, SYMBOL_TYPE, \
     INTEGER_CONST_TYPE, STRING_CONST_TYPE, IDENTIFIER_TYPE, TAG_CLOSER, TAG_SUFFIX, TAG_PREFIX
 
-OP_LIST = ['+', '-', '*', '/', '&', '|', '<', '>', '=']
+OP_LIST = ['+', '-', '*', '/', '&amp', '|', '&lt', '&gt', '=']
 UNARY_OP_LIST = ['-', '~']
 CLASS_TAG = "class"
 CLASS_VAR_TAG = "classVarDec"
@@ -11,6 +11,7 @@ PARAMETERS_LIST_TAG = "parameterList"
 CLASS_VAR_DEC_KEYWORDS = ["field", "static"]
 SUBROUTINE_DEC_TAG = "subroutineDec"
 SUBROUTINE_DEC_KEYWORDS = ['constructor', 'function', 'method']
+VAR_KEYWORDS = ['var']
 TYPE_LIST = ["int", "char", "boolean"]
 STATEMENTS_TAG = "statements"
 STATEMENTS_LIST = ['let', 'if', 'while', 'do', 'return']
@@ -74,9 +75,8 @@ class CompilationEngine:
         while self.__compile_class_var_dec():  # and self.__tokenizer.has_more_tokens():
             # self.__tokenizer.advance()
             continue
-        while self.__compile_subroutine(False):  # and self.__tokenizer.has_more_tokens():
-            # self.__tokenizer.advance()
-            continue
+        while self.__compile_subroutine(False) and self.__tokenizer.has_more_tokens():
+            self.__tokenizer.advance()
 
         # if not self.__tokenizer.has_more_tokens():
         #     return False  # should have more tokens
@@ -192,7 +192,7 @@ class CompilationEngine:
         :return: True iff the current token is set to the beginning of variable declaration
         """
         # checks if the current token is set to 'var', which means it is a var declaration
-        if not self.__check_keyword_symbol(KEYWORD_TYPE, write_to_file=False):  # 'var'
+        if not self.__check_keyword_symbol(KEYWORD_TYPE, VAR_KEYWORDS, write_to_file=False):  # 'var'
             return False
 
         # writes to the file the var declaration tag and increment the prefix tabs
@@ -309,7 +309,7 @@ class CompilationEngine:
         # advance the tokenizer for the statements
         self.__advance_tokenizer()
         self.__compile_statements()
-        self.__check_keyword_symbol(SYMBOL_TYPE)  # '}'
+        self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # '}'
 
         self.__advance_tokenizer()
 
@@ -359,14 +359,14 @@ class CompilationEngine:
         # advance the tokenizer for the statements
         self.__advance_tokenizer()
         self.__compile_statements()
-        self.__check_keyword_symbol(SYMBOL_TYPE)  # '}'
+        self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # '}'
 
         if self.__check_keyword_symbol(KEYWORD_TYPE, [ELSE_KEYWORD]):  # 'else'
             self.__check_keyword_symbol(SYMBOL_TYPE)  # '{'
             # advance the tokenizer for the statements
             self.__advance_tokenizer()
             self.__compile_statements()
-            self.__check_keyword_symbol(SYMBOL_TYPE)  # '}'
+            self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # '}'
 
         # writes to the file the if end tag
         self.__output_stream.write(self.__create_tag(IF_KEYWORD, TAG_CLOSER))
@@ -435,16 +435,16 @@ class CompilationEngine:
         """
         self.__check_keyword_symbol(IDENTIFIER_TYPE, make_advance=False)  # subroutine/class/var name
 
-        # checks if the next token is '(' : regulare subroutine call
+        # checks if the next token is '(' : regular subroutine call
         if self.__check_keyword_symbol(SYMBOL_TYPE, [OPEN_BRACKET]):
             self.__compile_expression_list()
             self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ')'
         # checks if the next token is '.' : method call
         elif self.__check_keyword_symbol(SYMBOL_TYPE, [CALL_CLASS_METHOD_MARK], False):
             self.__check_keyword_symbol(IDENTIFIER_TYPE)  # subroutineName
-            self.__check_keyword_symbol(IDENTIFIER_TYPE)  # ')'
+            self.__check_keyword_symbol(SYMBOL_TYPE)  # ')'
             self.__compile_expression_list()
-            self.__check_keyword_symbol(IDENTIFIER_TYPE, make_advance=False)  # '('
+            self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # '('
         # if the next token is not ( or . : not a subroutine call
         else:
             return False
@@ -520,13 +520,13 @@ class CompilationEngine:
         """
         :return: true iff the current token is a symbol containing an operation
         """
-        return self.__check_keyword_symbol(OP_LIST, SYMBOL_TYPE, make_advance)
+        return self.__check_keyword_symbol(SYMBOL_TYPE, OP_LIST, make_advance)
 
     def __check_unary_op(self, make_advance=True):
         """
         :return: true iff the current token is a symbol containing an unary operation
         """
-        return self.__check_keyword_symbol(UNARY_OP_LIST, SYMBOL_TYPE, make_advance)
+        return self.__check_keyword_symbol(SYMBOL_TYPE, UNARY_OP_LIST, make_advance)
 
     def __create_tag(self, tag, closer=''):
         """
