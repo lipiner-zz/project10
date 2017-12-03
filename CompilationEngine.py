@@ -6,6 +6,7 @@ UNARY_OP_LIST = ['-', '~']
 CLASS_TAG = "class"
 CLASS_VAR_TAG = "classVarDec"
 SUBROUTINE_BODY_TAG = "subroutineBody"
+VAR_DEC_TAG = "varDec"
 PARAMETERS_LIST_TAG = "parameterList"
 CLASS_VAR_DEC_KEYWORDS = ["field", "static"]
 SUBROUTINE_DEC_TAG = "subroutineDec"
@@ -195,7 +196,7 @@ class CompilationEngine:
             return False
 
         # writes to the file the var declaration tag and increment the prefix tabs
-        self.__output_stream.write(self.__create_tag(SUBROUTINE_BODY_TAG))
+        self.__output_stream.write(self.__create_tag(VAR_DEC_TAG))
 
         self.__check_keyword_symbol(KEYWORD_TYPE, make_advance=False)  # 'var'
         self.__check_type()
@@ -207,7 +208,7 @@ class CompilationEngine:
         self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ';'
 
         # writes to the file the var declaration end tag
-        self.__output_stream.write(self.__create_tag(SUBROUTINE_BODY_TAG, TAG_CLOSER))
+        self.__output_stream.write(self.__create_tag(VAR_DEC_TAG, TAG_CLOSER))
         return True
 
     def __compile_statements(self):
