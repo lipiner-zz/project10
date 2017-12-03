@@ -64,7 +64,7 @@ class CompilationEngine:
     def __compile_class_var_dec(self):
         """
         Compiles a static declaration or a field declaration
-        :return:
+        :return: True iff there was a valid class var declaration
         """
         # writes to the file the class tag and increment the prefix tabs
         self.__output_stream.write(self.__create_tag(CLASS_VAR_TAG))
@@ -84,6 +84,10 @@ class CompilationEngine:
         return True
 
     def __compile_subroutine(self):
+        """
+
+        :return: True iff there was a valid subroutine declaration
+        """
         # writes to the file the class tag and increment the prefix tabs
         self.__output_stream.write(self.__create_tag(CLASS_VAR_TAG))
 
@@ -103,7 +107,8 @@ class CompilationEngine:
         return True
 
     def __compile_parameter_list(self):
-        pass
+        if not self.__check_type():
+            return False
 
     def __compile_var_dec(self):
         pass
@@ -135,7 +140,7 @@ class CompilationEngine:
     def __compile_expression_list(self):
         pass
 
-    def __check_keyword_symbol(self, token_type, value_list=None):
+    def __check_keyword_symbol(self, token_type, value_list=None, make_advance=True):
         """
         checks if the current token is from token_type (which is keyword or symbol), and it's value is one of the
         given optional values (in the value_list). If so, writes the token string to the output file
@@ -144,12 +149,15 @@ class CompilationEngine:
         :return: True if the current token is from Keyword type, and it's value exists in the keyword list,
           and false otherwise
         """
-        if self.__tokenizer.has_more_tokens():
-            self.__tokenizer.advance()
-            if self.__tokenizer.get_token_type() == token_type:
-                if value_list is None or self.__tokenizer.get_value() in value_list:
-                    self.__output_stream.write(self.__prefix + self.__tokenizer.get_token_string())
-                    return True
+        if make_advance:
+            if self.__tokenizer.has_more_tokens():
+                self.__tokenizer.advance()
+            else:
+                return False
+        if self.__tokenizer.get_token_type() == token_type:
+            if value_list is None or self.__tokenizer.get_value() in value_list:
+                self.__output_stream.write(self.__prefix + self.__tokenizer.get_token_string())
+                return True
 
         return False
 
