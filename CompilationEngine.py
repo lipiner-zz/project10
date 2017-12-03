@@ -15,12 +15,18 @@ STATEMENTS_TAG = "statements"
 STATEMENTS_LIST = ['let', 'if', 'while', 'do', 'return']
 LET_KEYWORD = "let"
 IF_KEYWORD = "if"
+ELSE_KEYWORD = "else"
 WHILE_KEYWORD = "while"
 DO_KEYWORD = "do"
 RETURN_KEYWORD = "return"
 EXPRESSION_TAG = "expression"
+TERM_TAG = "term"
 ADDITIONAL_VAR_OPTIONAL_MARK = ","
 END_LINE_MARK = ";"
+OPEN_BRACKET = '('
+OPEN_ARRAY_ACCESS_BRACKET = '['
+CALL_CLASS_METHOD_MARK = "."
+FUNCTION_CALL_MARKS = [OPEN_BRACKET, CALL_CLASS_METHOD_MARK]
 TAG_OPENER = "\t"
 
 
@@ -201,7 +207,8 @@ class CompilationEngine:
 
     def __compile_statements(self):
         """
-        compiles the statements inside a subroutine
+        compiles the statements inside a subroutine.
+        Assumes the tokenizer is advanced for the first call.
         """
         # writes to the file the statements tag and increment the prefix tabs
         self.__output_stream.write(self.__create_tag(STATEMENTS_TAG))
@@ -224,15 +231,96 @@ class CompilationEngine:
         self.__output_stream.write(self.__create_tag(STATEMENTS_TAG, TAG_CLOSER))
 
     def __compile_do(self):
-        pass
+        """
+        Compiles a do statement.
+        Assumes the tokenizer is advanced for the first call.
+        Advance the tokenizer at the end
+        """
+        # writes to the file the do tag and increment the prefix tabs
+        self.__output_stream.write(self.__create_tag(DO_KEYWORD))
+
+        self.__check_keyword_symbol(KEYWORD_TYPE, make_advance=False)  # 'do'
+
+        self.__compile_subroutine_call()
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # ';'
+
+        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
+        self.__tokenizer.advance()
+
+        # writes to the file the do end tag
+        self.__output_stream.write(self.__create_tag(DO_KEYWORD, TAG_CLOSER))
 
     def __compile_let(self):
-        pass
+        """
+        Compiles a let statement.
+        Assumes the tokenizer is advanced for the first call.
+        Advance the tokenizer at the end.
+        """
+        # writes to the file the let tag and increment the prefix tabs
+        self.__output_stream.write(self.__create_tag(LET_KEYWORD))
+
+        self.__check_keyword_symbol(KEYWORD_TYPE, make_advance=False)  # 'let'
+
+        self.__check_keyword_symbol(IDENTIFIER_TYPE)  # varName
+        if self.__check_keyword_symbol(SYMBOL_TYPE, OPEN_ARRAY_ACCESS_BRACKET):  # '['
+            # advance the tokenizer for the expression
+            self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
+            self.__tokenizer.advance()
+            self.__compile_expression()
+            self.__check_keyword_symbol(SYMBOL_TYPE)  # ']'
+            self.__check_keyword_symbol(SYMBOL_TYPE)  # '='
+        else:  # without calling advance
+            self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # '='
+
+        # advance the tokenizer for the expression
+        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
+        self.__tokenizer.advance()
+        self.__compile_expression()
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # ';'
+
+        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
+        self.__tokenizer.advance()
+
+        # writes to the file the let end tag
+        self.__output_stream.write(self.__create_tag(LET_KEYWORD, TAG_CLOSER))
 
     def __compile_while(self):
-        pass
+        """
+        Compiles a while statement.
+        Assumes the tokenizer is advanced for the first call.
+        Advance the tokenizer at the end.
+        """
+        # writes to the file the while tag and increment the prefix tabs
+        self.__output_stream.write(self.__create_tag(WHILE_KEYWORD))
+
+        self.__check_keyword_symbol(KEYWORD_TYPE, make_advance=False)  # 'while'
+
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # '('
+        # advance the tokenizer for the expression
+        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
+        self.__tokenizer.advance()
+        self.__compile_expression()
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # ')'
+
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # '{'
+        # advance the tokenizer for the statements
+        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
+        self.__tokenizer.advance()
+        self.__compile_statements()
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # '}'
+
+        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
+        self.__tokenizer.advance()
+
+        # writes to the file the while end tag
+        self.__output_stream.write(self.__create_tag(WHILE_KEYWORD, TAG_CLOSER))
 
     def __compile_return(self):
+        """
+        Compiles a return statement.
+        Assumes the tokenizer is advanced for the first call.
+        Advance the tokenizer at the end.
+        """
         # writes to the file the return tag and increment the prefix tabs
         self.__output_stream.write(self.__create_tag(RETURN_KEYWORD))
 
@@ -243,14 +331,48 @@ class CompilationEngine:
         else:
             self.__compile_expression()
 
-        #### SHOULD MAKE ADVANCE???
         self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)
+        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
+        self.__tokenizer.advance()
 
         # writes to the file the return end tag
         self.__output_stream.write(self.__create_tag(RETURN_KEYWORD, TAG_CLOSER))
 
     def __compile_if(self):
-        pass
+        """
+        Compiles an if statement, possibly with a trailing else clause.
+        Assumes the tokenizer is advanced for the first call.
+        Advance the tokenizer at the end.
+        """
+        # writes to the file the if tag and increment the prefix tabs
+        self.__output_stream.write(self.__create_tag(IF_KEYWORD))
+
+        self.__check_keyword_symbol(KEYWORD_TYPE, make_advance=False)  # 'if'
+
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # '('
+        # advance the tokenizer for the expression
+        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
+        self.__tokenizer.advance()
+        self.__compile_expression()
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # ')'
+
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # '{'
+        # advance the tokenizer for the statements
+        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
+        self.__tokenizer.advance()
+        self.__compile_statements()
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # '}'
+
+        if self.__check_keyword_symbol(KEYWORD_TYPE, [ELSE_KEYWORD]):  # 'else'
+            self.__check_keyword_symbol(SYMBOL_TYPE)  # '{'
+            # advance the tokenizer for the statements
+            self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
+            self.__tokenizer.advance()
+            self.__compile_statements()
+            self.__check_keyword_symbol(SYMBOL_TYPE)  # '}'
+
+        # writes to the file the if end tag
+        self.__output_stream.write(self.__create_tag(IF_KEYWORD, TAG_CLOSER))
 
     def __compile_expression(self):
         pass
@@ -307,11 +429,11 @@ class CompilationEngine:
         """
         return self.__check_keyword_symbol(OP_LIST, SYMBOL_TYPE)
 
-    def __check_unary_op(self):
+    def __check_unary_op(self, make_advance=True):
         """
         :return: true iff the current token is a symbol containing an unary operation
         """
-        return self.__check_keyword_symbol(UNARY_OP_LIST, SYMBOL_TYPE)
+        return self.__check_keyword_symbol(UNARY_OP_LIST, SYMBOL_TYPE, make_advance)
 
     def __create_tag(self, tag, closer=''):
         """
