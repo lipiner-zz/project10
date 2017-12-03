@@ -5,7 +5,7 @@ OP_LIST = ['+', '-', '*', '/', '&', '|', '<', '>', '=']
 UNARY_OP_LIST = ['-', '~']
 CLASS_TAG = "class"
 CLASS_VAR_TAG = "classVarDec"
-CLASS_VAR_KEYWORDS = ["field, static"]
+CLASS_VAR_DEC_KEYWORDS = ["field, static"]
 SUBROUTINE_DEC_TAG = "subroutineDec"
 SUBROUTINE_DEC_KEYWORDS = ['constructor', 'function', 'method']
 ADDITIONAL_VAR_OPTIONAL_MARK = ","
@@ -40,9 +40,9 @@ class CompilationEngine:
         self.__output_stream.write(self.__create_tag(CLASS_TAG))
 
         # checks for the next parts of the class and writes them to the file
-        self.__check_keyword_symbol(KEYWORD_TYPE)
-        self.__check_keyword_symbol(IDENTIFIER_TYPE)
-        self.__check_keyword_symbol(SYMBOL_TYPE)
+        self.__check_keyword_symbol(KEYWORD_TYPE)  # "class"
+        self.__check_keyword_symbol(IDENTIFIER_TYPE)  # className
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # "{"
         if not self.__tokenizer.has_more_tokens():
             return False  # should have more tokens
 
@@ -56,7 +56,7 @@ class CompilationEngine:
         if not self.__tokenizer.has_more_tokens():
             return False  # should have more tokens
         else:
-            self.__check_keyword_symbol(SYMBOL_TYPE)  # block closer
+            self.__check_keyword_symbol(SYMBOL_TYPE)  # block closer "}"
 
         # writes to the file the class end tag
         self.__output_stream.write(self.__create_tag(CLASS_TAG, TAG_CLOSER))
@@ -69,19 +69,38 @@ class CompilationEngine:
         # writes to the file the class tag and increment the prefix tabs
         self.__output_stream.write(self.__create_tag(CLASS_VAR_TAG))
 
-        self.__check_keyword_symbol(KEYWORD_TYPE, )
+        if not self.__check_keyword_symbol(KEYWORD_TYPE, CLASS_VAR_DEC_KEYWORDS):
+            # It is not a class var dec
+            return False
         self.__check_type()
-        self.__check_keyword_symbol(IDENTIFIER_TYPE)
-        self.__check_keyword_symbol(SYMBOL_TYPE)
-        while self.__tokenizer.get_value() == ADDITIONAL_VAR_OPTIONAL_MARK:
-            self.__check_keyword_symbol(IDENTIFIER_TYPE)
-            self.__check_keyword_symbol(SYMBOL_TYPE)
+        self.__check_keyword_symbol(IDENTIFIER_TYPE)  # varName
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # "," or ";"
+        while self.__tokenizer.get_value() == ADDITIONAL_VAR_OPTIONAL_MARK:  # "," means there are more. ";" means done
+            self.__check_keyword_symbol(IDENTIFIER_TYPE)  # varName
+            self.__check_keyword_symbol(SYMBOL_TYPE)  # "," or ";"
 
         # writes to the file the class end tag
         self.__output_stream.write(self.__create_tag(CLASS_VAR_TAG, TAG_CLOSER))
+        return True
 
     def __compile_subroutine(self):
-        pass
+        # writes to the file the class tag and increment the prefix tabs
+        self.__output_stream.write(self.__create_tag(CLASS_VAR_TAG))
+
+        if not self.__check_keyword_symbol(KEYWORD_TYPE, SUBROUTINE_DEC_KEYWORDS):
+            # It is not a subroutine
+            return False
+        if not self.__check_keyword_symbol(KEYWORD_TYPE):  # not void
+            self.__check_type()
+        self.__check_keyword_symbol(IDENTIFIER_TYPE)  # subroutineName
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # "("
+        self.__compile_parameter_list()
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # ")"
+        self.__compile_subroutine_body()
+
+        # writes to the file the class end tag
+        self.__output_stream.write(self.__create_tag(CLASS_VAR_TAG, TAG_CLOSER))
+        return True
 
     def __compile_parameter_list(self):
         pass
