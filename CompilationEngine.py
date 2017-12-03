@@ -267,7 +267,7 @@ class CompilationEngine:
             self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
             self.__tokenizer.advance()
             self.__compile_expression()
-            self.__check_keyword_symbol(SYMBOL_TYPE)  # ']'
+            self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ']'
             self.__check_keyword_symbol(SYMBOL_TYPE)  # '='
         else:  # without calling advance
             self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # '='
@@ -276,7 +276,7 @@ class CompilationEngine:
         self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
         self.__tokenizer.advance()
         self.__compile_expression()
-        self.__check_keyword_symbol(SYMBOL_TYPE)  # ';'
+        self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ';'
 
         self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
         self.__tokenizer.advance()
@@ -300,7 +300,7 @@ class CompilationEngine:
         self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
         self.__tokenizer.advance()
         self.__compile_expression()
-        self.__check_keyword_symbol(SYMBOL_TYPE)  # ')'
+        self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ')'
 
         self.__check_keyword_symbol(SYMBOL_TYPE)  # '{'
         # advance the tokenizer for the statements
@@ -354,7 +354,7 @@ class CompilationEngine:
         self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
         self.__tokenizer.advance()
         self.__compile_expression()
-        self.__check_keyword_symbol(SYMBOL_TYPE)  # ')'
+        self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ')'
 
         self.__check_keyword_symbol(SYMBOL_TYPE)  # '{'
         # advance the tokenizer for the statements
