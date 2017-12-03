@@ -5,7 +5,9 @@ OP_LIST = ['+', '-', '*', '/', '&', '|', '<', '>', '=']
 UNARY_OP_LIST = ['-', '~']
 CLASS_TAG = "class"
 CLASS_VAR_TAG = "classVarDec"
+CLASS_VAR_KEYWORDS = ["field, static"]
 SUBROUTINE_DEC_TAG = "subroutineDec"
+SUBROUTINE_DEC_KEYWORDS = ['constructor', 'function', 'method']
 ADDITIONAL_VAR_OPTIONAL_MARK = ","
 TAG_OPENER = "\t"
 
@@ -67,7 +69,7 @@ class CompilationEngine:
         # writes to the file the class tag and increment the prefix tabs
         self.__output_stream.write(self.__create_tag(CLASS_VAR_TAG))
 
-        self.__check_keyword_symbol(KEYWORD_TYPE)
+        self.__check_keyword_symbol(KEYWORD_TYPE, )
         self.__check_type()
         self.__check_keyword_symbol(IDENTIFIER_TYPE)
         self.__check_keyword_symbol(SYMBOL_TYPE)
