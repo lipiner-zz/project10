@@ -68,7 +68,7 @@ class JackTokenizer:
             # the token contains extra chars
             next_char = self.__current_token[-1]
             self.__current_token = self.__current_token[:-1]
-            if not next_char.isspace or next_char == EOF_MARK:
+            if not next_char.isspace() and next_char != EOF_MARK:
                 # the next char should be ignored- processes it
                 self.__next_token = next_char
                 self.__process_next_token()
