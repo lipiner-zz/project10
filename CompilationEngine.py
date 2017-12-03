@@ -30,6 +30,7 @@ CALL_CLASS_METHOD_MARK = "."
 FUNCTION_CALL_MARKS = [OPEN_BRACKET, CALL_CLASS_METHOD_MARK]
 KEYWORD_CONSTANT_LIST = ["true", "false", "null", "this"]
 TAG_OPENER = "\t"
+TAG_END_OF_LINE = "\n"
 
 
 class CompilationEngine:
@@ -553,4 +554,4 @@ class CompilationEngine:
             prefix = self.__prefix
             self.__prefix += TAG_OPENER
 
-        return prefix + TAG_PREFIX + closer + tag + TAG_SUFFIX
+        return prefix + TAG_PREFIX + closer + tag + TAG_SUFFIX + TAG_END_OF_LINE

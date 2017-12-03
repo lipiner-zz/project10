@@ -10,6 +10,7 @@ EOF_MARK = ''
 TAG_PREFIX = "<"
 TAG_SUFFIX = ">"
 TAG_CLOSER = "/"
+TAG_END_OF_LINE = "\n"
 TAG_DELIMITER = " "
 NUMBER_OF_READING_BYTES = 1
 STRING_CONST_MARK = "\""
@@ -118,7 +119,7 @@ class JackTokenizer:
         :return: the token string in the format of: <TYPE> VALUE </TYPE>
         """
         return self.__create_type_tag() + TAG_DELIMITER + self.__current_token + TAG_DELIMITER + \
-            self.__create_type_tag(TAG_CLOSER)
+            self.__create_type_tag(TAG_CLOSER) + TAG_END_OF_LINE
 
     def __create_type_tag(self, closer=''):
         """
