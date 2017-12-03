@@ -5,6 +5,8 @@ OP_LIST = ['+', '-', '*', '/', '&', '|', '<', '>', '=']
 UNARY_OP_LIST = ['-', '~']
 CLASS_TAG = "class"
 CLASS_VAR_TAG = "classVarDec"
+SUBROUTINE_BODY_TAG = "subroutineBody"
+PARAMETERS_LIST_TAG = "parameterList"
 CLASS_VAR_DEC_KEYWORDS = ["field, static"]
 SUBROUTINE_DEC_TAG = "subroutineDec"
 SUBROUTINE_DEC_KEYWORDS = ['constructor', 'function', 'method']
@@ -52,7 +54,7 @@ class CompilationEngine:
         while self.__compile_class_var_dec():  # and self.__tokenizer.has_more_tokens():
             # self.__tokenizer.advance()
             continue
-        while self.__compile_subroutine():  # and self.__tokenizer.has_more_tokens():
+        while self.__compile_subroutine(False):  # and self.__tokenizer.has_more_tokens():
             # self.__tokenizer.advance()
             continue
 
@@ -64,57 +66,106 @@ class CompilationEngine:
         # writes to the file the class end tag
         self.__output_stream.write(self.__create_tag(CLASS_TAG, TAG_CLOSER))
 
-    def __compile_class_var_dec(self):
+    def __compile_class_var_dec(self, make_advance=True):
         """
         Compiles a static declaration or a field declaration
+        :param: make_advance: boolean parameter- should make advance before the first call or not. Default value is True
         :return: True iff there was a valid class var declaration
         """
+        if not self.__check_keyword_symbol(KEYWORD_TYPE, CLASS_VAR_DEC_KEYWORDS, make_advance):
+            # It is not a class var dec
+            return False
+
         # writes to the file the class tag and increment the prefix tabs
         self.__output_stream.write(self.__create_tag(CLASS_VAR_TAG))
 
-        if not self.__check_keyword_symbol(KEYWORD_TYPE, CLASS_VAR_DEC_KEYWORDS):
-            # It is not a class var dec
-            return False
         self.__check_type()
         self.__check_keyword_symbol(IDENTIFIER_TYPE)  # varName
-        self.__check_keyword_symbol(SYMBOL_TYPE)  # "," or ";"
-        while self.__tokenizer.get_value() == ADDITIONAL_VAR_OPTIONAL_MARK:  # "," means there are more. ";" means done
+        while self.__check_keyword_symbol(SYMBOL_TYPE, [ADDITIONAL_VAR_OPTIONAL_MARK]):  # "," more varName
             self.__check_keyword_symbol(IDENTIFIER_TYPE)  # varName
-            self.__check_keyword_symbol(SYMBOL_TYPE)  # "," or ";"
+
+        self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ";"
 
         # writes to the file the class end tag
         self.__output_stream.write(self.__create_tag(CLASS_VAR_TAG, TAG_CLOSER))
         return True
 
-    def __compile_subroutine(self):
+    def __compile_subroutine(self, make_advance=True):
         """
 
+        :param: make_advance: boolean parameter- should make advance before the first call or not. Default value is True
         :return: True iff there was a valid subroutine declaration
         """
-        # writes to the file the class tag and increment the prefix tabs
-        self.__output_stream.write(self.__create_tag(CLASS_VAR_TAG))
-
-        if not self.__check_keyword_symbol(KEYWORD_TYPE, SUBROUTINE_DEC_KEYWORDS):
+        if not self.__check_keyword_symbol(KEYWORD_TYPE, SUBROUTINE_DEC_KEYWORDS, make_advance):
             # It is not a subroutine
             return False
+
+        # writes to the file the class tag and increment the prefix tabs
+        self.__output_stream.write(self.__create_tag(SUBROUTINE_DEC_TAG))
+
         if not self.__check_keyword_symbol(KEYWORD_TYPE):  # not void
             self.__check_type()
         self.__check_keyword_symbol(IDENTIFIER_TYPE)  # subroutineName
         self.__check_keyword_symbol(SYMBOL_TYPE)  # "("
-        self.__compile_parameter_list()
-        self.__check_keyword_symbol(SYMBOL_TYPE)  # ")"
+        if self.__compile_parameter_list():
+            self.__check_keyword_symbol(SYMBOL_TYPE)  # ")"
+        else:  # advance was made in the compile_parameter_list without use
+            self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ")"
         self.__compile_subroutine_body()
 
         # writes to the file the class end tag
-        self.__output_stream.write(self.__create_tag(CLASS_VAR_TAG, TAG_CLOSER))
+        self.__output_stream.write(self.__create_tag(SUBROUTINE_DEC_TAG, TAG_CLOSER))
         return True
+
+    def __compile_subroutine_body(self):
+        # writes to the file the class tag and increment the prefix tabs
+        self._output_stream.write(self._create_tag(SUBROUTINE_BODY_TAG))
+
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # '{'
+
+        # writes to the file the class end tag
+        self._output_stream.write(self._create_tag(SUBROUTINE_BODY_TAG, TAG_CLOSER))
 
     def __compile_parameter_list(self):
         if not self.__check_type():
+            # It is not a parameter list
             return False
 
+        # writes to the file the class tag and increment the prefix tabs
+        self.__output_stream.write(self.__create_tag(PARAMETERS_LIST_TAG))
+
+        if not self.__check_keyword_symbol(KEYWORD_TYPE):  # not void
+            self.__check_type()
+        self.__check_keyword_symbol(IDENTIFIER_TYPE)  # subroutineName
+        self.__check_keyword_symbol(SYMBOL_TYPE)  # "("
+        if self.__compile_parameter_list():
+            self.__check_keyword_symbol(SYMBOL_TYPE)  # ")"
+        else:  # advance was made in the compile_parameter_list without use
+            self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ")"
+        self.__compile_subroutine_body()
+
+        # writes to the file the class end tag
+        self.__output_stream.write(self.__create_tag(PARAMETERS_LIST_TAG, TAG_CLOSER))
+        return True
+
     def __compile_var_dec(self):
-        pass
+        # writes to the file the class tag and increment the prefix tabs
+        self._output_stream.write(self._create_tag(SUBROUTINE_BODY_TAG))
+
+        # checks if there is a
+        if not self.__check_keyword_symbol(KEYWORD_TYPE):  # 'var'
+            return False
+
+        self.__check_type()
+        self.__check_keyword_symbol(IDENTIFIER_TYPE)  # variableName
+        while self.__check_keyword_symbol(SYMBOL_TYPE, [ADDITIONAL_VAR_OPTIONAL_MARK]):
+            self.__check_keyword_symbol(IDENTIFIER_TYPE)
+
+        self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ';'
+
+        # writes to the file the class end tag
+        self._output_stream.write(self._create_tag(SUBROUTINE_BODY_TAG, TAG_CLOSER))
+        return True
 
     def __compile_statements(self):
         pass
@@ -143,7 +194,7 @@ class CompilationEngine:
     def __compile_expression_list(self):
         pass
 
-    def __check_keyword_symbol(self, token_type, value_list=None, make_advance=True):
+    def __check_keyword_symbol(self, token_type, value_list=None, make_advance=True, write_to_file=True):
         """
         checks if the current token is from token_type (which is keyword or symbol), and it's value is one of the
         given optional values (in the value_list). If so, writes the token string to the output file
@@ -159,13 +210,25 @@ class CompilationEngine:
                 return False
         if self.__tokenizer.get_token_type() == token_type:
             if value_list is None or self.__tokenizer.get_value() in value_list:
-                self.__output_stream.write(self.__prefix + self.__tokenizer.get_token_string())
+                if write_to_file:
+                    self.__output_stream.write(self.__prefix + self.__tokenizer.get_token_string())
                 return True
 
         return False
 
     def __check_type(self):
-        pass
+        """
+        checks if the current token is a type. If so, writes the token to the stream
+        :return: true iff the current token is a type
+        """
+        # checks for builtin types
+        if self.__check_keyword_symbol(KEYWORD_TYPE, TYPE_LIST):
+            return True
+        # checks for user-defined class types
+        if not self.__check_keyword_symbol(IDENTIFIER_TYPE, False):
+            return False
+
+        return True
 
     def __check_op(self):
         """
