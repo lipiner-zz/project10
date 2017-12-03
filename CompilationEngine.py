@@ -127,10 +127,11 @@ class CompilationEngine:
         self.__check_keyword_symbol(KEYWORD_TYPE, SUBROUTINE_DEC_KEYWORDS, make_advance=False)
 
         if not self.__check_keyword_symbol(KEYWORD_TYPE):  # not void
-            self.__check_type()
+            self.__check_type(False)
         self.__check_keyword_symbol(IDENTIFIER_TYPE)  # subroutineName
         self.__check_keyword_symbol(SYMBOL_TYPE)  # "("
 
+        self.__compile_parameter_list()
         # advance was made in the compile_parameter_list without use
         self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ")"
         self.__compile_subroutine_body()
