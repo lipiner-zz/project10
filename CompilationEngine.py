@@ -3,7 +3,10 @@ from JackTokenizer import JackTokenizer, KEYWORD_TYPE, SYMBOL_TYPE, \
 
 OP_LIST = ['+', '-', '*', '/', '&', '|', '<', '>', '=']
 UNARY_OP_LIST = ['-', '~']
-CLASS_TYPE = "class"
+CLASS_TAG = "class"
+CLASS_VAR_TAG = "classVarDec"
+SUBROUTINE_DEC_TAG = "subroutineDec"
+ADDITIONAL_VAR_OPTIONAL_MARK = ","
 TAG_OPENER = "\t"
 
 
@@ -32,8 +35,7 @@ class CompilationEngine:
         :return: True iff the class was compiled successfully
         """
         # writes to the file the class tag and increment the prefix tabs
-        self.__output_stream.write(CompilationEngine.__create_tag(CLASS_TYPE))
-        self.__prefix += TAG_OPENER
+        self.__output_stream.write(self.__create_tag(CLASS_TAG))
 
         # checks for the next parts of the class and writes them to the file
         self.__check_keyword_symbol(KEYWORD_TYPE)
@@ -54,12 +56,27 @@ class CompilationEngine:
         else:
             self.__check_keyword_symbol(SYMBOL_TYPE)  # block closer
 
-        # writes to the file the class end tag after decrement the prefix tabs
-        self.__prefix = self.__prefix[:-len(TAG_OPENER)]
-        self.__output_stream.write(CompilationEngine.__create_tag(CLASS_TYPE, TAG_CLOSER))
+        # writes to the file the class end tag
+        self.__output_stream.write(self.__create_tag(CLASS_TAG, TAG_CLOSER))
 
     def __compile_class_var_dec(self):
-        pass
+        """
+        Compiles a static declaration or a field declaration
+        :return:
+        """
+        # writes to the file the class tag and increment the prefix tabs
+        self.__output_stream.write(self.__create_tag(CLASS_VAR_TAG))
+
+        self.__check_keyword_symbol(KEYWORD_TYPE)
+        self.__check_type()
+        self.__check_keyword_symbol(IDENTIFIER_TYPE)
+        self.__check_keyword_symbol(SYMBOL_TYPE)
+        while self.__tokenizer.get_value() == ADDITIONAL_VAR_OPTIONAL_MARK:
+            self.__check_keyword_symbol(IDENTIFIER_TYPE)
+            self.__check_keyword_symbol(SYMBOL_TYPE)
+
+        # writes to the file the class end tag
+        self.__output_stream.write(self.__create_tag(CLASS_VAR_TAG, TAG_CLOSER))
 
     def __compile_subroutine(self):
         pass
@@ -130,12 +147,20 @@ class CompilationEngine:
         """
         return self.__check_keyword_symbol(UNARY_OP_LIST, SYMBOL_TYPE)
 
-    @staticmethod
-    def __create_tag(tag, closer=''):
+    def __create_tag(self, tag, closer=''):
         """
         Creates the type tag in its format
         :param tag: The actual tag
         :param closer: the closer note if there should be one. Otherwise it has default empty value
         :return: the type tag
         """
-        return TAG_PREFIX + closer + tag + TAG_SUFFIX
+        if closer:
+            # the closer is not empty - decrementing it and set the prefix to be after the changing
+            self.__prefix = self.__prefix[:-len(TAG_OPENER)]
+            prefix = self.__prefix
+        else:
+            # the closer is empty - saves the current prefix before incrementing it for the next tag
+            prefix = self.__prefix
+            self.__prefix += TAG_OPENER
+
+        return prefix + TAG_PREFIX + closer + tag + TAG_SUFFIX
