@@ -25,6 +25,7 @@ EXPRESSION_LIST_TAG = "expressionList"
 ADDITIONAL_VAR_OPTIONAL_MARK = ","
 END_LINE_MARK = ";"
 OPEN_BRACKET = '('
+CLOSE_BRACKET = ')'
 OPEN_ARRAY_ACCESS_BRACKET = '['
 CALL_CLASS_METHOD_MARK = "."
 FUNCTION_CALL_MARKS = [OPEN_BRACKET, CALL_CLASS_METHOD_MARK]
@@ -245,13 +246,11 @@ class CompilationEngine:
         self.__check_keyword_symbol(KEYWORD_TYPE, make_advance=False)  # 'do'
 
         # advance the tokenizer for the subroutine call
-        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
-        self.__tokenizer.advance()
+        self.__advance_tokenizer()
         self.__check_subroutine_call()
         self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ';'
 
-        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
-        self.__tokenizer.advance()
+        self.__advance_tokenizer()
 
         # writes to the file the do end tag
         self.__output_stream.write(self.__create_tag(DO_KEYWORD, TAG_CLOSER))
@@ -270,8 +269,7 @@ class CompilationEngine:
         self.__check_keyword_symbol(IDENTIFIER_TYPE)  # varName
         if self.__check_keyword_symbol(SYMBOL_TYPE, OPEN_ARRAY_ACCESS_BRACKET):  # '['
             # advance the tokenizer for the expression
-            self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
-            self.__tokenizer.advance()
+            self.__advance_tokenizer()
             self.__compile_expression()
             self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ']'
             self.__check_keyword_symbol(SYMBOL_TYPE)  # '='
@@ -279,13 +277,11 @@ class CompilationEngine:
             self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # '='
 
         # advance the tokenizer for the expression
-        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
-        self.__tokenizer.advance()
+        self.__advance_tokenizer()
         self.__compile_expression()
         self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ';'
 
-        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
-        self.__tokenizer.advance()
+        self.__advance_tokenizer()
 
         # writes to the file the let end tag
         self.__output_stream.write(self.__create_tag(LET_KEYWORD, TAG_CLOSER))
@@ -303,20 +299,17 @@ class CompilationEngine:
 
         self.__check_keyword_symbol(SYMBOL_TYPE)  # '('
         # advance the tokenizer for the expression
-        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
-        self.__tokenizer.advance()
+        self.__advance_tokenizer()
         self.__compile_expression()
         self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ')'
 
         self.__check_keyword_symbol(SYMBOL_TYPE)  # '{'
         # advance the tokenizer for the statements
-        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
-        self.__tokenizer.advance()
+        self.__advance_tokenizer()
         self.__compile_statements()
         self.__check_keyword_symbol(SYMBOL_TYPE)  # '}'
 
-        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
-        self.__tokenizer.advance()
+        self.__advance_tokenizer()
 
         # writes to the file the while end tag
         self.__output_stream.write(self.__create_tag(WHILE_KEYWORD, TAG_CLOSER))
@@ -338,8 +331,7 @@ class CompilationEngine:
             self.__compile_expression()
 
         self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)
-        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
-        self.__tokenizer.advance()
+        self.__advance_tokenizer()
 
         # writes to the file the return end tag
         self.__output_stream.write(self.__create_tag(RETURN_KEYWORD, TAG_CLOSER))
@@ -357,23 +349,20 @@ class CompilationEngine:
 
         self.__check_keyword_symbol(SYMBOL_TYPE)  # '('
         # advance the tokenizer for the expression
-        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
-        self.__tokenizer.advance()
+        self.__advance_tokenizer()
         self.__compile_expression()
         self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ')'
 
         self.__check_keyword_symbol(SYMBOL_TYPE)  # '{'
         # advance the tokenizer for the statements
-        self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
-        self.__tokenizer.advance()
+        self.__advance_tokenizer()
         self.__compile_statements()
         self.__check_keyword_symbol(SYMBOL_TYPE)  # '}'
 
         if self.__check_keyword_symbol(KEYWORD_TYPE, [ELSE_KEYWORD]):  # 'else'
             self.__check_keyword_symbol(SYMBOL_TYPE)  # '{'
             # advance the tokenizer for the statements
-            self.__tokenizer.has_more_tokens()  # must be true. Otherwise the file is invalid
-            self.__tokenizer.advance()
+            self.__advance_tokenizer()
             self.__compile_statements()
             self.__check_keyword_symbol(SYMBOL_TYPE)  # '}'
 
@@ -392,8 +381,7 @@ class CompilationEngine:
 
         # compiles all the op + term that exists
         while self.__check_op(False):
-            self.__tokenizer.has_more_tokens()  # must have more tokens, otherwise the input is invalid
-            self.__tokenizer.advance()
+            self.__advance_tokenizer()
             self.__compile_term()
 
         # writes to the file the expression end tag
@@ -406,61 +394,60 @@ class CompilationEngine:
         # writes to the file the term tag and increment the prefix tabs
         self.__output_stream.write(self.__create_tag(TERM_TAG))
 
+        # checks for all the term options:
+        # integer/string constant
         if self.__tokenizer.get_token_type() in [INTEGER_CONST_TYPE, STRING_CONST_TYPE]:
             self.__output_stream.write(self.__prefix + self.__tokenizer.get_token_string())
-            self.__tokenizer.has_more_tokens()  # must have more tokens, otherwise the input is invalid
-            self.__tokenizer.advance()
+            self.__advance_tokenizer()
+        # keyword constant
         elif self.__check_keyword_symbol(KEYWORD_TYPE, KEYWORD_CONSTANT_LIST, False):
-            self.__tokenizer.has_more_tokens()  # must have more tokens, otherwise the input is invalid
-            self.__tokenizer.advance()
+            self.__advance_tokenizer()
+        # (expression)
         elif self.__check_keyword_symbol(SYMBOL_TYPE, [OPEN_BRACKET], False):
-            self.__tokenizer.has_more_tokens()  # must have more tokens, otherwise the input is invalid
-            self.__tokenizer.advance()
+            self.__advance_tokenizer()
             self.__compile_expression()
             self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ')'
-            self.__tokenizer.has_more_tokens()  # must have more tokens, otherwise the input is invalid
-            self.__tokenizer.advance()
+            self.__advance_tokenizer()
+        # unaryOp + term
         elif self.__check_unary_op(False):
-            self.__tokenizer.has_more_tokens()  # must have more tokens, otherwise the input is invalid
-            self.__tokenizer.advance()
+            self.__advance_tokenizer()
             self.__compile_term()
-        else:  # starts with identifier
-            if not self.__check_subroutine_call():
+        # varName / varName[expression] / subroutineCall- in any case, starts with identifier
+        else:
+            if not self.__check_subroutine_call():  # anyway writes the identifier
+                # checks for varName[expression]
                 if self.__check_keyword_symbol(SYMBOL_TYPE, [OPEN_ARRAY_ACCESS_BRACKET], False):
-                    self.__tokenizer.has_more_tokens()  # must have more tokens, otherwise the input is invalid
-                    self.__tokenizer.advance()
+                    self.__advance_tokenizer()
                     self.__compile_expression()
                     self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ']'
-                    self.__tokenizer.has_more_tokens()  # must have more tokens, otherwise the input is invalid
-                    self.__tokenizer.advance()
+                    self.__advance_tokenizer()
 
         # writes to the file the term end tag
         self.__output_stream.write(self.__create_tag(TERM_TAG, TAG_CLOSER))
 
     def __check_subroutine_call(self):
         """
-        checks if the next tokens are subroutine call. In any case, writes to the stream the first identifier
+        checks if the next tokens are subroutine call. In any case, writes to the stream the first identifier:
+        subroutine/class/variable name
         :return: true iff the next tokens are subroutine calls
         """
         self.__check_keyword_symbol(IDENTIFIER_TYPE, make_advance=False)  # subroutine/class/var name
 
-        # checks if the next token is (
+        # checks if the next token is '(' : regulare subroutine call
         if self.__check_keyword_symbol(SYMBOL_TYPE, [OPEN_BRACKET]):
-            self.__compile_expression_list()  #########SHOULD CHECK IF THERE'S EVEN ANY EXPRESSIONS
+            self.__compile_expression_list()
             self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # ')'
-        # checks if the next token is .
+        # checks if the next token is '.' : method call
         elif self.__check_keyword_symbol(SYMBOL_TYPE, [CALL_CLASS_METHOD_MARK], False):
             self.__check_keyword_symbol(IDENTIFIER_TYPE)  # subroutineName
             self.__check_keyword_symbol(IDENTIFIER_TYPE)  # ')'
-            self.__compile_expression_list()  #########SHOULD CHECK IF THERE'S EVEN ANY EXPRESSIONS
+            self.__compile_expression_list()
             self.__check_keyword_symbol(IDENTIFIER_TYPE, make_advance=False)  # '('
-        # the next token is not ( or . : not a subroutine call
+        # if the next token is not ( or . : not a subroutine call
         else:
             return False
 
-        # advances the tokenizer
-        self.__tokenizer.has_more_tokens()  # must have more tokens, otherwise the input is invalid
-        self.__tokenizer.advance()
+        self.__advance_tokenizer()
         return True
 
     def __compile_expression_list(self):
@@ -470,18 +457,19 @@ class CompilationEngine:
         # writes to the file the expression list tag and increment the prefix tabs
         self.__output_stream.write(self.__create_tag(EXPRESSION_LIST_TAG))
 
-        # advances the tokenizer
-        self.__tokenizer.has_more_tokens()  # must have more tokens, otherwise the input is invalid
-        self.__tokenizer.advance()
-        # compiles the first expression
-        self.__compile_expression()
+        self.__advance_tokenizer()
 
-        while self.__check_keyword_symbol(SYMBOL_TYPE, [ADDITIONAL_VAR_OPTIONAL_MARK], False):
-            # advances the tokenizer
-            self.__tokenizer.has_more_tokens()  # must have more tokens, otherwise the input is invalid
-            self.__tokenizer.advance()
-            # compiles the next expression
+        # if the expression list is not empty: compile all the expression
+        if self.__tokenizer.get_value() != CLOSE_BRACKET:
+            # compiles the first expression
             self.__compile_expression()
+
+            # checks for more expressions separated with comma
+            while self.__check_keyword_symbol(SYMBOL_TYPE, [ADDITIONAL_VAR_OPTIONAL_MARK], False):
+                # advances the tokenizer
+                self.__advance_tokenizer()
+                # compiles the next expression
+                self.__compile_expression()
 
         # writes to the file the expression list end tag
         self.__output_stream.write(self.__create_tag(EXPRESSION_LIST_TAG, TAG_CLOSER))
@@ -555,3 +543,10 @@ class CompilationEngine:
             self.__prefix += TAG_OPENER
 
         return prefix + TAG_PREFIX + closer + tag + TAG_SUFFIX + TAG_END_OF_LINE
+
+    def __advance_tokenizer(self):
+        """
+        advances the inner tokenizer in case when there must be more tokens
+        """
+        self.__tokenizer.has_more_tokens()  # when there must be more tokens, otherwise the input is invalid
+        self.__tokenizer.advance()
