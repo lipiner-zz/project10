@@ -53,9 +53,9 @@ class CompilationEngine:
         """
         Compiles the whole file
         """
-        self.__create_tag(COMPILER_TAG)
+        self.__output_stream.write(self.__create_tag(COMPILER_TAG))
         self.__compile_class()
-        self.__create_tag(COMPILER_TAG, TAG_CLOSER)
+        self.__output_stream.write(self.__create_tag(COMPILER_TAG, TAG_CLOSER))
 
     def __compile_class(self):
         """
@@ -544,7 +544,6 @@ class CompilationEngine:
             # the closer is empty - saves the current prefix before incrementing it for the next tag
             prefix = self.__prefix
             self.__prefix += TAG_OPENER
-
         return prefix + TAG_PREFIX + closer + tag + TAG_SUFFIX + TAG_END_OF_LINE
 
     def __advance_tokenizer(self):
