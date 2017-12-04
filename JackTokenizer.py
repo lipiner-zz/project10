@@ -1,7 +1,7 @@
 KEYWORD_TYPE = "keyword"
 SYMBOL_TYPE = "symbol"
 INTEGER_CONST_TYPE = "integerConstant"
-STRING_CONST_TYPE = "StringConstant"
+STRING_CONST_TYPE = "stringConstant"
 IDENTIFIER_TYPE = "identifier"
 KEYWORD_LIST = ['class', 'constructor', 'function', 'method', 'field', 'static', 'var', 'int', 'char', 'boolean',
                 'void', 'true', 'false', 'null', 'this', 'let', 'do', 'if', 'else', 'while', 'return']
@@ -18,7 +18,7 @@ COMMENT_SYMBOLS = ["/", "*"]
 BLOCK_COMMENT_START_MARK = "/*"
 BLOCK_COMMENT_END_MARK = "*/"
 LINE_COMMENT_MARK = "//"
-SYMBOL_FIX = {"<": "&lt", ">": "&gt", "&": "&amp"}
+SYMBOL_FIX = {"<": "&lt;", ">": "&gt;", "&": "&amp;"}
 
 
 class JackTokenizer:

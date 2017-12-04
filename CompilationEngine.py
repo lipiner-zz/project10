@@ -1,7 +1,7 @@
 from JackTokenizer import JackTokenizer, KEYWORD_TYPE, SYMBOL_TYPE, \
     INTEGER_CONST_TYPE, STRING_CONST_TYPE, IDENTIFIER_TYPE, TAG_CLOSER, TAG_SUFFIX, TAG_PREFIX
 
-OP_LIST = ['+', '-', '*', '/', '&amp', '|', '&lt', '&gt', '=']
+OP_LIST = ['+', '-', '*', '/', '&amp;', '|', '&lt;', '&gt;', '=']
 UNARY_OP_LIST = ['-', '~']
 COMPILER_TAG = "tokens"
 CLASS_TAG = "class"
@@ -22,6 +22,11 @@ ELSE_KEYWORD = "else"
 WHILE_KEYWORD = "while"
 DO_KEYWORD = "do"
 RETURN_KEYWORD = "return"
+LET_TAG = "letStatement"
+IF_TAG = "ifStatement"
+WHILE_TAG = "whileStatement"
+DO_TAG = "doStatement"
+RETURN_TAG = "returnStatement"
 EXPRESSION_TAG = "expression"
 TERM_TAG = "term"
 EXPRESSION_LIST_TAG = "expressionList"
@@ -53,9 +58,9 @@ class CompilationEngine:
         """
         Compiles the whole file
         """
-        self.__output_stream.write(self.__create_tag(COMPILER_TAG))
+        # self.__output_stream.write(self.__create_tag(COMPILER_TAG))
         self.__compile_class()
-        self.__output_stream.write(self.__create_tag(COMPILER_TAG, TAG_CLOSER))
+        # self.__output_stream.write(self.__create_tag(COMPILER_TAG, TAG_CLOSER))
 
     def __compile_class(self):
         """
@@ -167,25 +172,23 @@ class CompilationEngine:
         """
         Compiles a (possibly empty) parameter list, not including the enclosing “()”.
         In any way, the function advance the tokenizer
-        :return: True iff there was a valid parameter list
         """
-        if not self.__check_type(write_to_file=False):
-            # It is not a parameter list
-            return False
+        # if not self.__check_type(write_to_file=False):
+        #     # It is not a parameter list
+        #     return False
 
         # writes to the file the parameter list tag and increment the prefix tabs
         self.__output_stream.write(self.__create_tag(PARAMETERS_LIST_TAG))
 
-        self.__check_type(make_advance=False)
-        self.__check_keyword_symbol(IDENTIFIER_TYPE)  # varName
-
-        while self.__check_keyword_symbol(SYMBOL_TYPE, [ADDITIONAL_VAR_OPTIONAL_MARK]):  # "," more varName
-            self.__check_type()
+        if self.__check_type():
             self.__check_keyword_symbol(IDENTIFIER_TYPE)  # varName
+
+            while self.__check_keyword_symbol(SYMBOL_TYPE, [ADDITIONAL_VAR_OPTIONAL_MARK]):  # "," more varName
+                self.__check_type()
+                self.__check_keyword_symbol(IDENTIFIER_TYPE)  # varName
 
         # writes to the file the parameter list end tag
         self.__output_stream.write(self.__create_tag(PARAMETERS_LIST_TAG, TAG_CLOSER))
-        return True
 
     def __compile_var_dec(self):
         """
@@ -245,7 +248,7 @@ class CompilationEngine:
         Advance the tokenizer at the end
         """
         # writes to the file the do tag and increment the prefix tabs
-        self.__output_stream.write(self.__create_tag(DO_KEYWORD))
+        self.__output_stream.write(self.__create_tag(DO_TAG))
 
         self.__check_keyword_symbol(KEYWORD_TYPE, make_advance=False)  # 'do'
 
@@ -257,7 +260,7 @@ class CompilationEngine:
         self.__advance_tokenizer()
 
         # writes to the file the do end tag
-        self.__output_stream.write(self.__create_tag(DO_KEYWORD, TAG_CLOSER))
+        self.__output_stream.write(self.__create_tag(DO_TAG, TAG_CLOSER))
 
     def __compile_let(self):
         """
@@ -266,7 +269,7 @@ class CompilationEngine:
         Advance the tokenizer at the end.
         """
         # writes to the file the let tag and increment the prefix tabs
-        self.__output_stream.write(self.__create_tag(LET_KEYWORD))
+        self.__output_stream.write(self.__create_tag(LET_TAG))
 
         self.__check_keyword_symbol(KEYWORD_TYPE, make_advance=False)  # 'let'
 
@@ -288,7 +291,7 @@ class CompilationEngine:
         self.__advance_tokenizer()
 
         # writes to the file the let end tag
-        self.__output_stream.write(self.__create_tag(LET_KEYWORD, TAG_CLOSER))
+        self.__output_stream.write(self.__create_tag(LET_TAG, TAG_CLOSER))
 
     def __compile_while(self):
         """
@@ -297,7 +300,7 @@ class CompilationEngine:
         Advance the tokenizer at the end.
         """
         # writes to the file the while tag and increment the prefix tabs
-        self.__output_stream.write(self.__create_tag(WHILE_KEYWORD))
+        self.__output_stream.write(self.__create_tag(WHILE_TAG))
 
         self.__check_keyword_symbol(KEYWORD_TYPE, make_advance=False)  # 'while'
 
@@ -316,7 +319,7 @@ class CompilationEngine:
         self.__advance_tokenizer()
 
         # writes to the file the while end tag
-        self.__output_stream.write(self.__create_tag(WHILE_KEYWORD, TAG_CLOSER))
+        self.__output_stream.write(self.__create_tag(WHILE_TAG, TAG_CLOSER))
 
     def __compile_return(self):
         """
@@ -325,7 +328,7 @@ class CompilationEngine:
         Advance the tokenizer at the end.
         """
         # writes to the file the return tag and increment the prefix tabs
-        self.__output_stream.write(self.__create_tag(RETURN_KEYWORD))
+        self.__output_stream.write(self.__create_tag(RETURN_TAG))
 
         self.__check_keyword_symbol(KEYWORD_TYPE, make_advance=False)  # 'return'
 
@@ -336,7 +339,7 @@ class CompilationEngine:
         self.__advance_tokenizer()
 
         # writes to the file the return end tag
-        self.__output_stream.write(self.__create_tag(RETURN_KEYWORD, TAG_CLOSER))
+        self.__output_stream.write(self.__create_tag(RETURN_TAG, TAG_CLOSER))
 
     def __compile_if(self):
         """
@@ -345,7 +348,7 @@ class CompilationEngine:
         Advance the tokenizer at the end.
         """
         # writes to the file the if tag and increment the prefix tabs
-        self.__output_stream.write(self.__create_tag(IF_KEYWORD))
+        self.__output_stream.write(self.__create_tag(IF_TAG))
 
         self.__check_keyword_symbol(KEYWORD_TYPE, make_advance=False)  # 'if'
 
@@ -370,7 +373,7 @@ class CompilationEngine:
             self.__advance_tokenizer()
 
         # writes to the file the if end tag
-        self.__output_stream.write(self.__create_tag(IF_KEYWORD, TAG_CLOSER))
+        self.__output_stream.write(self.__create_tag(IF_TAG, TAG_CLOSER))
 
     def __compile_expression(self):
         """
