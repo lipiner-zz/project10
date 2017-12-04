@@ -75,8 +75,8 @@ class CompilationEngine:
         while self.__compile_class_var_dec():  # and self.__tokenizer.has_more_tokens():
             # self.__tokenizer.advance()
             continue
-        while self.__compile_subroutine(False) and self.__tokenizer.has_more_tokens():
-            self.__tokenizer.advance()
+        while self.__compile_subroutine(False):
+            self.__advance_tokenizer()
 
         # if not self.__tokenizer.has_more_tokens():
         #     return False  # should have more tokens
@@ -327,12 +327,10 @@ class CompilationEngine:
 
         self.__check_keyword_symbol(KEYWORD_TYPE, make_advance=False)  # 'return'
 
-        if self.__check_keyword_symbol(SYMBOL_TYPE, [END_LINE_MARK]):
-            return
-        else:
+        if not self.__check_keyword_symbol(SYMBOL_TYPE, [END_LINE_MARK]):
             self.__compile_expression()
+            self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)
 
-        self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)
         self.__advance_tokenizer()
 
         # writes to the file the return end tag
@@ -367,6 +365,7 @@ class CompilationEngine:
             self.__advance_tokenizer()
             self.__compile_statements()
             self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # '}'
+            self.__advance_tokenizer()
 
         # writes to the file the if end tag
         self.__output_stream.write(self.__create_tag(IF_KEYWORD, TAG_CLOSER))
