@@ -22,7 +22,10 @@ SYMBOL_FIX = {"<": "&lt;", ">": "&gt;", "&": "&amp;"}
 
 
 class JackTokenizer:
-
+    """
+    Removes all comments and white space from the input stream and breaks it into Jacklanguage
+    tokens, as specified by the Jack grammar.
+    """
     def __init__(self, input_stream):
         """
         Creates a tokenizer object with the given input stream
