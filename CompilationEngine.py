@@ -82,20 +82,11 @@ class CompilationEngine:
         self.__check_keyword_symbol(KEYWORD_TYPE)  # "class"
         self.__check_keyword_symbol(IDENTIFIER_TYPE)  # className
         self.__check_keyword_symbol(SYMBOL_TYPE)  # "{"
-        # if not self.__tokenizer.has_more_tokens():
-        #     return False  # should have more tokens
-        #
-        # # checks for optional classVerDec and subroutineDec
-        # self.__tokenizer.advance()
-        while self.__compile_class_var_dec():  # and self.__tokenizer.has_more_tokens():
-            # self.__tokenizer.advance()
+        while self.__compile_class_var_dec():
             continue
         while self.__compile_subroutine(False):
             self.__advance_tokenizer()
 
-        # if not self.__tokenizer.has_more_tokens():
-        #     return False  # should have more tokens
-        # else:
         self.__check_keyword_symbol(SYMBOL_TYPE, make_advance=False)  # block closer "}"
 
         # writes to the file the class end tag
@@ -181,10 +172,6 @@ class CompilationEngine:
         Compiles a (possibly empty) parameter list, not including the enclosing “()”.
         In any way, the function advance the tokenizer
         """
-        # if not self.__check_type(write_to_file=False):
-        #     # It is not a parameter list
-        #     return False
-
         # writes to the file the parameter list tag and increment the prefix tabs
         self.__output_stream.write(self.__create_tag(PARAMETERS_LIST_TAG))
 
