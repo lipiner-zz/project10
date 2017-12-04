@@ -3,6 +3,7 @@ from JackTokenizer import JackTokenizer, KEYWORD_TYPE, SYMBOL_TYPE, \
 
 OP_LIST = ['+', '-', '*', '/', '&amp', '|', '&lt', '&gt', '=']
 UNARY_OP_LIST = ['-', '~']
+COMPILER_TAG = "tokens"
 CLASS_TAG = "class"
 CLASS_VAR_TAG = "classVarDec"
 SUBROUTINE_BODY_TAG = "subroutineBody"
@@ -51,9 +52,10 @@ class CompilationEngine:
     def compile(self):
         """
         Compiles the whole file
-        :return: True iff the file was compiled successfully
         """
-        return self.__compile_class()
+        self.__create_tag(COMPILER_TAG)
+        self.__compile_class()
+        self.__create_tag(COMPILER_TAG, TAG_CLOSER)
 
     def __compile_class(self):
         """
