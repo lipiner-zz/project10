@@ -169,7 +169,7 @@ class CompilationEngine:
 
     def __compile_parameter_list(self):
         """
-        Compiles a (possibly empty) parameter list, not including the enclosing “()”.
+        Compiles a (possibly empty) parameter list, not including the enclosing "()".
         In any way, the function advance the tokenizer
         """
         # writes to the file the parameter list tag and increment the prefix tabs
