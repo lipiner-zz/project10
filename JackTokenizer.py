@@ -18,7 +18,8 @@ COMMENT_SYMBOLS = ["/", "*"]
 BLOCK_COMMENT_START_MARK = "/*"
 BLOCK_COMMENT_END_MARK = "*/"
 LINE_COMMENT_MARK = "//"
-SYMBOL_FIX = {"&": "&amp;", "<": "&lt;", ">": "&gt;"}
+SYMBOL_FIX_FIRST = {"&": "&amp;"}
+SYMBOL_FIX_SECOND = {"<": "&lt;", ">": "&gt;"}
 
 
 class JackTokenizer:
@@ -136,8 +137,10 @@ class JackTokenizer:
         """
         Changes the symbol if it contains XML unsupported notes
         """
-        for symbol in SYMBOL_FIX:
-            self.__current_token = self.__current_token.replace(symbol, SYMBOL_FIX[symbol])
+        for symbol in SYMBOL_FIX_FIRST:
+            self.__current_token = self.__current_token.replace(symbol, SYMBOL_FIX_FIRST[symbol])
+        for symbol in SYMBOL_FIX_SECOND:
+            self.__current_token = self.__current_token.replace(symbol, SYMBOL_FIX_SECOND[symbol])
 
     def __get_string_constant_value(self):
         """
