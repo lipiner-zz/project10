@@ -18,7 +18,7 @@ COMMENT_SYMBOLS = ["/", "*"]
 BLOCK_COMMENT_START_MARK = "/*"
 BLOCK_COMMENT_END_MARK = "*/"
 LINE_COMMENT_MARK = "//"
-SYMBOL_FIX = {"<": "&lt;", ">": "&gt;", "&": "&amp;"}
+SYMBOL_FIX = {"&": "&amp;", "<": "&lt;", ">": "&gt;"}
 
 
 class JackTokenizer:
