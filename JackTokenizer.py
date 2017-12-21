@@ -43,7 +43,7 @@ class JackTokenizer:
         :return: True iff there is another token to read
         """
         # there is a next token
-        if self.__next_token:
+        if self.__next_token_type:
             return True
 
         # Search for the next token which is not an empty line, comment or an EOF.
