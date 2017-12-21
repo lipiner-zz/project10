@@ -137,7 +137,7 @@ class JackTokenizer:
         Changes the symbol if it contains XML unsupported notes
         """
         for symbol in SYMBOL_FIX:
-            self.__current_token.replace(symbol, SYMBOL_FIX[symbol])
+            self.__current_token = self.__current_token.replace(symbol, SYMBOL_FIX[symbol])
 
     def __get_string_constant_value(self):
         """
